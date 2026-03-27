@@ -33,6 +33,7 @@ def getBlock(date_str):
                     b["time"], tz=timezone.utc
                 ).strftime("%Y-%m-%d %H:%M:%S"),
                 "hash": b["hash"],
+                "height": b.get("height", b["block_index"]),
             }
             for b in sorted_blocks
         }
@@ -63,8 +64,8 @@ def generate(date_str, pool_list):
     pos = 0
 
     for _, row in pool_list.iterrows():
-        id = int(row["ID"])
-        uuriin_hayg = str(row["uuriin_hayg"])
+        id = int(row["id"])
+        uuriin_hayg = str(row["sector_name"])
         total_pool = int(row["total_pool"])
         choose_pool = int(row["choose_pool"])
         digits = math.ceil(math.log10(total_pool + 1))
@@ -98,12 +99,18 @@ def generate(date_str, pool_list):
 
         all_results.append(
             {
+                
                 "id": id,
-                "uuriin_hayg": uuriin_hayg,
+                "sector_name": uuriin_hayg,
                 "total_pool": total_pool,
                 "choose_pool": choose_pool,
                 "chosen": chosen,
                 "row_finished_on": current_date_str,
+                "first_5_blocks": [
+                    block_data[key]["hash"]
+                    for i, key in enumerate(list(block_data.keys()))
+                    if i < 5
+                ],
             }
         )
 
