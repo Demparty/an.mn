@@ -42,37 +42,33 @@ Optional: copy `run.bat` and point it at your Python executable and project fold
 ## How it works (short)
 
 ### What each function does
-- getDate(txt_path)
-Reads a date string from a text file (expected format: YYYY-MM-DD).
+**Function Summaries (what each does):**
 
-- getList(xlsx_path)
-Loads the Excel sheet named list into a pandas DataFrame.
+- **getDate(txt_path)**
+  - Reads and returns a date string (expected format: `YYYY-MM-DD`) from a text file.
 
-- getBlock(date_str)
+- **getList(xlsx_path)**
+  - Loads the Excel sheet named `list` from the provided file into a pandas DataFrame.
 
-Parses the given date in UTC, adds 1 day, and converts that to a timestamp (ms).
-Calls https://blockchain.info/blocks/<timestamp>?format=json.
-Sorts returned blocks by time.
-Returns a dictionary like:
-key: block_index
-value: { "timestamp": "...", "hash": "..." }
-On any error, prints it and returns {}.
-generate(date_str, pool_list)
-- Core logic:
+- **getBlock(date_str)**
+  - Parses `date_str` as UTC, adds one day, and converts it to a Unix timestamp (milliseconds).
+  - Fetches blocks from `https://blockchain.info/blocks/<timestamp>?format=json`.
+  - Sorts the blocks by their time.
+  - Returns a dictionary mapping `block_index` to a dictionary with keys: `timestamp` and `hash` (and `height` if available).
+  - On error, prints the exception and returns an empty dictionary (`{}`).
 
-Gets block data for the input date; if unavailable, keeps stepping back day-by-day until data exists.
-Converts each block hash from hex to decimal and concatenates all digits into one long decimal_stream.
-For each row in pool_list:
-Reads ID, uuriin_hayg, total_pool, choose_pool.
-Computes digit width with ceil(log10(total_pool + 1)) (how many digits to read per attempt).
-Repeatedly slices fixed-size chunks from decimal_stream, converts to int, and accepts numbers that are:
-between 1 and total_pool
-not already chosen (unique picks)
-If stream runs out, it fetches older day blocks, appends more digits, and continues.
-Stores one result object per row:
-metadata + selected numbers (chosen)
-date where row finished (row_finished_on)
-a hash field.
+- **generate(date_str, pool_list)**
+  - Main selection logic:
+    - Fetches block data for the input date; if not present, steps back day by day until data is found.
+    - Concatenates all block hashes for those blocks, converting each from hex to decimal digits, building one long stream (`decimal_stream`).
+    - For each row in `pool_list`:
+      - Reads `id`, `sector_name`, `total_pool`, and `choose_pool`.
+      - Determines how many digits are needed per random number (using `ceil(log10(total_pool + 1))`).
+      - Slices fixed-size chunks from `decimal_stream`, converts each to integer, and accepts it as a selection if:
+        - The number is between 1 and `total_pool` (inclusive), **and**
+        - The number hasn't already been picked for this row (ensures uniqueness).
+      - If `decimal_stream` runs out of digits, fetches earlier day blocks and continues appending digits.
+      - Collects and saves, for each row: chosen numbers, input metadata, date used for selection (`row_finished_on`), and the first 5 block hashes used.
 
 ## Dependencies
 
