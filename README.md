@@ -1,4 +1,4 @@
-# Randomizer
+# Member selection
 
 Python utility that draws **verifiable random selections** from numbered pools. It uses digits derived from **Bitcoin block hashes** (via [Blockchain.com](https://www.blockchain.com/)’s public API) as the random stream, so anyone can reproduce the picks given the same start date and pool definitions.
 
