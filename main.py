@@ -63,6 +63,8 @@ def generate(date_str, pool_list):
     pos = 0
 
     for _, row in pool_list.iterrows():
+        id = int(row["ID"])
+        uuriin_hayg = str(row["uuriin_hayg"])
         total_pool = int(row["total_pool"])
         choose_pool = int(row["choose_pool"])
         digits = math.ceil(math.log10(total_pool + 1))
@@ -96,6 +98,8 @@ def generate(date_str, pool_list):
 
         all_results.append(
             {
+                "id": id,
+                "uuriin_hayg": uuriin_hayg,
                 "total_pool": total_pool,
                 "choose_pool": choose_pool,
                 "chosen": chosen,
