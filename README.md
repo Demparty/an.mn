@@ -41,9 +41,38 @@ Optional: copy `run.bat` and point it at your Python executable and project fold
 
 ## How it works (short)
 
-1. Loads blocks for the relevant day from the API, sorts them, and builds a stream of decimal digits from their hex hashes.
-2. For each row, it reads fixed-width chunks from that stream, maps them into `1` … `total_pool`, skips duplicates and out-of-range values, until `choose_pool` unique picks exist.
-3. If the stream runs out, it prepends data from earlier days’ blocks.
+### What each function does
+getDate(txt_path)
+Reads a date string from a text file (expected format: YYYY-MM-DD).
+
+getList(xlsx_path)
+Loads the Excel sheet named list into a pandas DataFrame.
+
+getBlock(date_str)
+
+Parses the given date in UTC, adds 1 day, and converts that to a timestamp (ms).
+Calls https://blockchain.info/blocks/<timestamp>?format=json.
+Sorts returned blocks by time.
+Returns a dictionary like:
+key: block_index
+value: { "timestamp": "...", "hash": "..." }
+On any error, prints it and returns {}.
+generate(date_str, pool_list)
+Core logic:
+
+Gets block data for the input date; if unavailable, keeps stepping back day-by-day until data exists.
+Converts each block hash from hex to decimal and concatenates all digits into one long decimal_stream.
+For each row in pool_list:
+Reads ID, uuriin_hayg, total_pool, choose_pool.
+Computes digit width with ceil(log10(total_pool + 1)) (how many digits to read per attempt).
+Repeatedly slices fixed-size chunks from decimal_stream, converts to int, and accepts numbers that are:
+between 1 and total_pool
+not already chosen (unique picks)
+If stream runs out, it fetches older day blocks, appends more digits, and continues.
+Stores one result object per row:
+metadata + selected numbers (chosen)
+date where row finished (row_finished_on)
+a hash field.
 
 ## Dependencies
 
