@@ -42,13 +42,13 @@ Optional: copy `run.bat` and point it at your Python executable and project fold
 ## How it works (short)
 
 ### What each function does
-getDate(txt_path)
+- getDate(txt_path)
 Reads a date string from a text file (expected format: YYYY-MM-DD).
 
-getList(xlsx_path)
+- getList(xlsx_path)
 Loads the Excel sheet named list into a pandas DataFrame.
 
-getBlock(date_str)
+- getBlock(date_str)
 
 Parses the given date in UTC, adds 1 day, and converts that to a timestamp (ms).
 Calls https://blockchain.info/blocks/<timestamp>?format=json.
@@ -58,7 +58,7 @@ key: block_index
 value: { "timestamp": "...", "hash": "..." }
 On any error, prints it and returns {}.
 generate(date_str, pool_list)
-Core logic:
+- Core logic:
 
 Gets block data for the input date; if unavailable, keeps stepping back day-by-day until data exists.
 Converts each block hash from hex to decimal and concatenates all digits into one long decimal_stream.
