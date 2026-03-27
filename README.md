@@ -70,6 +70,22 @@ Optional: copy `run.bat` and point it at your Python executable and project fold
       - If `decimal_stream` runs out of digits, fetches earlier day blocks and continues appending digits.
       - Collects and saves, for each row: chosen numbers, input metadata, date used for selection (`row_finished_on`), and the first 5 block hashes used.
 
+## Check result
+
+To verify the block data and randomization source, you can independently check block hashes and block times for any date from [https://www.blockchain.com/explorer](https://www.blockchain.com/explorer) or via the [blockchain.info API](https://www.blockchain.com/api/blockchain_api).  
+The script fetches blocks for the selected UTC date **plus one day** (see code logic), using the endpoint  
+```
+https://blockchain.info/blocks/<timestamp_ms>?format=json
+```
+where `<timestamp_ms>` is **midnight UTC** for (date + 1 day), in milliseconds since epoch.
+
+If you wish to confirm the method or see which blocks were used:
+- Open the printed hashes (`first_5_blocks` column) in `result.xlsx`.
+- Look up these hashes on Blockchain explorer to confirm authenticity and block details.
+- You may also re-download daily blocks using the link pattern above, substituting the correct timestamp.
+
+This makes the random selection verifiable, reproducible, and auditable by any party.
+
 ## Dependencies
 
 See `requirements.txt`: `pandas`, `openpyxl`, `requests`.
