@@ -14,6 +14,10 @@ def getList(xlsx_path):
     xlsx_list = pd.read_excel(xlsx_path, sheet_name="list", engine="openpyxl")
     return xlsx_list
 
+def getSelectionList(xlsx_path):
+    xlsx_list = pd.read_excel(xlsx_path, sheet_name="list", engine="openpyxl")
+    return xlsx_list
+
 
 def getBlock(date_str):
     date = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
@@ -37,7 +41,10 @@ def getBlock(date_str):
             }
             for b in sorted_blocks
         }
-
+        # Write block data (as JSON) to a file for inspection
+        import json
+        with open("block_data.json", "w", encoding="utf-8") as outfile:
+            json.dump(block_dict, outfile, indent=4, ensure_ascii=False)
         return block_dict
 
     except Exception as e:
@@ -66,11 +73,14 @@ def generate(date_str, pool_list):
     for _, row in pool_list.iterrows():
         id = int(row["id"])
         uuriin_hayg = str(row["sector_name"])
-        total_pool = int(row["total_pool"])
-        choose_pool = int(row["choose_pool"])
-        digits = math.ceil(math.log10(total_pool + 1))
+        file_name = str(row["file_name"])
+        choose_pool = int(row["choose_count"])
         chosen = []
-
+        chosen_id = []
+        chosen_name = []
+        selection_list = getSelectionList(f"./list/{file_name}")
+        total_pool = len(selection_list)
+        digits = math.ceil(math.log10(total_pool + 1))
         while len(chosen) < choose_pool:
             if pos + digits > len(decimal_stream):
                 prev_date_dt = current_date_dt - timedelta(days=1)
@@ -96,21 +106,21 @@ def generate(date_str, pool_list):
             num = int(chunk)
             if 1 <= num <= total_pool and num not in chosen:
                 chosen.append(num)
-
+        for _, row in selection_list.iterrows():
+            if row["id"] in chosen:
+                chosen_id.append(int(row["id"]))
+                chosen_name.append(str(row["unique_id"]))
         all_results.append(
             {
                 
                 "id": id,
                 "sector_name": uuriin_hayg,
-                "total_pool": total_pool,
-                "choose_pool": choose_pool,
-                "chosen": chosen,
+                "file_name": file_name,
+                "total_count": total_pool,
+                "choose_count": choose_pool,
+                "chosen_id": chosen_id,
+                "chosen_name": chosen_name,
                 "row_finished_on": current_date_str,
-                "first_5_blocks": [
-                    block_data[key]["hash"]
-                    for i, key in enumerate(list(block_data.keys()))
-                    if i < 5
-                ],
             }
         )
 
