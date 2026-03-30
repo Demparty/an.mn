@@ -41,10 +41,9 @@ def getBlock(date_str):
             }
             for b in sorted_blocks
         }
-        # Write block data (as JSON) to a file for inspection
-        import json
-        with open("block_data.json", "w", encoding="utf-8") as outfile:
-            json.dump(block_dict, outfile, indent=4, ensure_ascii=False)
+        # Write block data (as excel) to a file for inspection
+        df = pd.DataFrame(block_dict.values(), index=block_dict.keys())
+        df.to_excel("block_data.xlsx", index=True)
         return block_dict
 
     except Exception as e:
