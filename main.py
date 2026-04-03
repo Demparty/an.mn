@@ -14,6 +14,7 @@ def getList(xlsx_path):
     xlsx_list = pd.read_excel(xlsx_path, sheet_name="list", engine="openpyxl")
     return xlsx_list
 
+
 def getSelectionList(xlsx_path):
     xlsx_list = pd.read_excel(xlsx_path, sheet_name="list", engine="openpyxl")
     return xlsx_list
@@ -79,39 +80,42 @@ def generate(date_str, pool_list):
         chosen_name = []
         selection_list = getSelectionList(f"./list/{file_name}")
         total_pool = len(selection_list)
-        digits = math.ceil(math.log10(total_pool + 1))
-        while len(chosen) < choose_pool:
-            if pos + digits > len(decimal_stream):
-                prev_date_dt = current_date_dt - timedelta(days=1)
-                prev_date_str = prev_date_dt.strftime("%Y-%m-%d")
-                prev_block_data = getBlock(prev_date_str)
-                while not prev_block_data:
-                    prev_date_dt -= timedelta(days=1)
+        if total_pool <= choose_pool:
+            chosen = list(range(1, total_pool + 1))
+        else:
+            digits = math.ceil(math.log10(total_pool + 1))
+            while len(chosen) < choose_pool:
+                if pos + digits > len(decimal_stream):
+                    prev_date_dt = current_date_dt - timedelta(days=1)
                     prev_date_str = prev_date_dt.strftime("%Y-%m-%d")
                     prev_block_data = getBlock(prev_date_str)
+                    while not prev_block_data:
+                        prev_date_dt -= timedelta(days=1)
+                        prev_date_str = prev_date_dt.strftime("%Y-%m-%d")
+                        prev_block_data = getBlock(prev_date_str)
 
-                new_stream = "".join(
-                    str(int(block["hash"], 16)) for block in prev_block_data.values()
-                )
-                decimal_stream += new_stream
-                current_date_dt = prev_date_dt
-                current_date_str = prev_date_str
+                    new_stream = "".join(
+                        str(int(block["hash"], 16))
+                        for block in prev_block_data.values()
+                    )
+                    decimal_stream += new_stream
+                    current_date_dt = prev_date_dt
+                    current_date_str = prev_date_str
 
-            chunk = decimal_stream[pos : pos + digits]
-            pos += digits
-            if len(chunk) < digits:
-                continue
+                chunk = decimal_stream[pos : pos + digits]
+                pos += digits
+                if len(chunk) < digits:
+                    continue
 
-            num = int(chunk)
-            if 1 <= num <= total_pool and num not in chosen:
-                chosen.append(num)
+                num = int(chunk)
+                if 1 <= num <= total_pool and num not in chosen:
+                    chosen.append(num)
         for _, row in selection_list.iterrows():
             if row["id"] in chosen:
                 chosen_id.append(int(row["id"]))
                 chosen_name.append(str(row["unique_id"]))
         all_results.append(
             {
-                
                 "id": id,
                 "sector_name": uuriin_hayg,
                 "file_name": file_name,
